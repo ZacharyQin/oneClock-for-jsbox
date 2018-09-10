@@ -7,7 +7,7 @@
  *   该脚本是对app"oneClock"其中一个界面的实现,原app的翻页效果比较有趣，个人能力有限无法实现
  *   1.修改了布局相关的代码，尝试对iphonex屏幕尺寸做适配,
  *   2.添加了检测版本相关的代码
- *   双击更换主题
+ *   食用方法：双击更换主题
  * @/brief
  */
 const version =1.01;
@@ -340,8 +340,8 @@ function scriptVersionUpdate(){
       let msg =resp.data.msg;
       if(newVersion>version){
         $ui.alert({
-          title: "已有新版本发布!V${newVersion}",
-          message: "是否更新？\n更新完成后请重新启动脚本。\n更新内容：${msg}",
+          title: `已有新版本发布!V${newVersion}`,
+          message: `是否更新？\n更新完成后请重新启动脚本。\n${msg}`,
           actions:[{
             title:"更新",
             handler:function(){
