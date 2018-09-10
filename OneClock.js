@@ -61,7 +61,7 @@ let labelHour = timeFormate(new Date().getHours()); //初始化小时数
 let labelMinute = timeFormate(new Date().getMinutes()); //初始化分钟数
 
 let apm = function(hour) {
-  if (hour > 12) {
+  if (hour >= 12) {
     return "PM";
   } else {
     return "AM";
