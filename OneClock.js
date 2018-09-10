@@ -15,7 +15,7 @@ if (screenHeight<screenWidth){
   let tmp= screenWidth
   screenWidth=screenHeight
   screenHeight=tmp
-}
+}//获取屏幕信息
 let timeFontSize = 180; //时钟的字体大小
 
 let cardsDistance=40//卡片之间的距离
@@ -23,7 +23,7 @@ let cardLength=screenHeight-screenWidth-cardsDistance//卡片边长，暂时处�
 let cardSize = $size(cardLength, cardLength); //卡片大小
 let edgeSize = (screenWidth-cardSize.width)/2; //卡片边距
 
-let blankBarPos = edgeSize + cardSize.height/2-3; //竖屏时上下卡片遮挡条的prototype
+let blankBarPos = edgeSize + cardSize.height/2-3; //竖屏时上下卡片遮挡条的位置
 
 let blankBarHeight = 5; //黑边遮挡条的宽度
 
@@ -244,12 +244,13 @@ let changeTheme = function() {
   $("minutes").textColor = themeColor[theme]["textColor"];
   $("APMLabel").textColor = themeColor[theme]["textColor"];
   $device.taptic(1);
-};
+};//处理双击更换主题的事件
 
 var isIphoneX = $device.isIphoneX;
 var isIphonePlus = $device.isIphonePlus;
 var isIpad = $device.isIpad;
 var isIpadPro = $device.isIpadPro;
+//屏幕检测
 if (
   (isIphoneX || isIphonePlus || isIpad || isIpadPro) &&
   typeof $cache.get("firstTime") == "undefined"
