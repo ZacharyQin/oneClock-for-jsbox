@@ -41,8 +41,8 @@ var isIphoneX = $device.isIphoneX;
 let timeFontSize = 180; //时钟的字体大小
 let cardsDistance=40//卡片之间的距离
 let cardLength=2/3*screenWidth+3//卡片边长，暂时处理成正方形
-let frameWidth=cardLength
-let frameHeight=cardsDistance+2*cardLength
+let frameWidth=cardLength //容纳卡片的frame宽度
+let frameHeight=cardsDistance+2*cardLength//容纳卡片的frame宽度
 let blankBarHeight = 5; //黑边遮挡条的宽度
 var theme = "black";//默认黑色主题
 
