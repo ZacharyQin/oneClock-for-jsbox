@@ -1,5 +1,5 @@
 /**
- * @Version 1.0.1
+ * @Version 1.0.2
  * @author Zachary_M
  * @date 2018.9.10
  * @brief
@@ -10,10 +10,11 @@
  *   食用方法：双击更换主题
  * @/brief
  */
-const version =1.01;
+const version =1.02;
 scriptVersionUpdate();
 
 $app.idleTimerDisabled //禁用息屏
+//屏幕方向检测
 let checkVertical=function() {
   let orientation=$device.info["screen"]["orientation"]
   if(orientation==3||orientation==4){
@@ -23,7 +24,8 @@ let checkVertical=function() {
   }else{
     return $device.info["screen"]["width"].toString()<$device.info["screen"]["height"].toString()?true:false //手机平放时获取当前的屏幕状态
   }
-}//获取屏幕当前朝向
+}
+//部件大小设置
 if (checkVertical()){
   var screenWidth=$device.info["screen"]["width"]
   var screenHeight=$device.info["screen"]["height"]  
@@ -33,17 +35,15 @@ if (checkVertical()){
 }
 //获取屏幕信息
 var isVertical=checkVertical()
+var isIpad = $device.isIpad;
+var isIpadPro = $device.isIpadPro;
 var isIphoneX = $device.isIphoneX;
 let timeFontSize = 180; //时钟的字体大小
 let cardsDistance=40//卡片之间的距离
-let cardLength=screenHeight-screenWidth-cardsDistance//卡片边长，暂时处理成正方形
-cardLength=isIphoneX?cardLength-100:cardLength  //对iphonex的边长作调整
-let cardSize = $size(cardLength, cardLength); //卡片大小
-let edgeTop = (screenWidth-cardSize.width)/2; //卡片边距，此处top考虑横屏情况下的上下边距
-let edgeLeft= (screenHeight-2*cardLength-cardsDistance)/2 //卡片边距，此处left考虑横屏情况下的左右边距
-let blankBarPos = edgeTop + cardSize.height/2-3; //竖屏时上下卡片遮挡条的位置
+let cardLength=2/3*screenWidth+3//卡片边长，暂时处理成正方形
+let frameWidth=cardLength
+let frameHeight=cardsDistance+2*cardLength
 let blankBarHeight = 5; //黑边遮挡条的宽度
-
 var theme = "black";//默认黑色主题
 
 let themeColor = {
@@ -92,23 +92,6 @@ var timer = $timer.schedule({
     let chour = timeFormate(date.getHours());
     let cminute = timeFormate(date.getMinutes());
     if ($("minutes").text != cminute || $("hours").text != chour) {
-      // if ($("minutes").text != cminute){
-      //   $ui.animate({
-      //     duration: 0.2,
-      //     animation: function() {
-      //       $("minutesView").bgcolor=themeColor[theme=="black"?"white":"black"]["viewColor"]
-      //     }
-      //   });
-      //   $delay(0.1, function() {
-      //     $ui.animate({
-      //       duration: 0.2,
-      //       animation: function() {
-      //         $("minutesView").bgcolor=themeColor[theme]["viewColor"]
-      //         $("minutes").text = cminute;
-      //       }
-      //     });
-      //   });
-      // }
       $ui.animate({
         duration: 0.4,
         animation: function() {
@@ -130,28 +113,13 @@ var timer = $timer.schedule({
         }
       });
     }
+    //处理屏幕变化问题
     if(checkVertical()!=isVertical){
       isVertical=!isVertical;
-      console.log("Vertical Changed")
-      let tmp=edgeTop
-      edgeLeft=edgeTop
-      edgeTop=tmp
-      blankBarPos = edgeTop + cardSize.height/2-3;
-      $("blankBarHours").updateLayout(function(make) {
-        make.top.inset(blankBarPos);
-      });
-      $("blankBarMinutes").updateLayout(function(make) {
-        make.bottom.inset(blankBarPos);
-      });
-      $("hoursView").updateLayout(function(make) {
-        make.top.inset(edgeTop);
-        make.left.inset(edgeLeft);
-        
-      });
-      $("minutesView").updateLayout(function(make) {
-        make.bottom.inset(edgeTop);
-        make.right.inset(edgeLeft);
-      });
+      $("frameView").updateLayout(function(make) {
+        make.left.right.inset((isVertical?screenWidth-frameWidth:screenHeight-frameHeight)/2);
+        make.top.bottom.inset((isVertical?screenWidth-frameWidth:screenHeight-frameHeight)/2)
+      })
     }
   }
 }); //定时任务，定时改变界面元素
@@ -171,114 +139,116 @@ function main() {
     },
     views: [
       {
-        type: "view",
+        type:"view",
         props: {
-          id: "hoursView",
-          bgcolor: themeColor[theme]["viewColor"],
-          smoothRadius: 20
+          id: "frameView",
+          bgcolor: themeColor[theme]["bgColor"],
         },
         layout: function(make, view) {
-          make.top.inset(edgeTop);
-          make.left.inset(edgeLeft);
-          make.size.equalTo(cardSize);
+          make.left.right.inset((isVertical?screenWidth-frameWidth:screenHeight-frameHeight)/2);
+          make.top.bottom.inset((isVertical?screenWidth-frameWidth:screenHeight-frameHeight)/2)
         },
-
-        views: [
+        views:[
           {
-            type: "label",
+            type: "view",
             props: {
-              id: "hours",
-              text: labelHour,
-              align: $align.center,
-              textColor: themeColor[theme]["textColor"],
-              font: $font("TimesNewRomanPS-BoldMT", timeFontSize)
+              id: "hoursView",
+              bgcolor: themeColor[theme]["viewColor"],
+              smoothRadius: 20
             },
             layout: function(make, view) {
-              make.center.equalTo(view.super);
-            }
+              make.top.inset(0);
+              make.left.inset(0);
+              make.size.equalTo($size(cardLength, cardLength));
+            },
+    
+            views: [
+              {
+                type: "label",
+                props: {
+                  id: "hours",
+                  text: labelHour,
+                  align: $align.center,
+                  textColor: themeColor[theme]["textColor"],
+                  font: $font("TimesNewRomanPS-BoldMT", timeFontSize)
+                },
+                layout: function(make, view) {
+                  make.center.equalTo(view.super);
+                }
+              },
+              {
+                type: "label",
+                props: {
+                  id: "APMLabel",
+                  text: apm(labelHour),
+                  align: $align.center,
+                  textColor: themeColor[theme]["textColor"],
+                  font: $font(20)
+                },
+                layout: function(make, view) {
+                  if (apm($("hours").text) == "PM") {
+                    make.left.bottom.inset(20);
+                  } else {
+                    make.left.top.inset(20);
+                  }
+                }
+              },
+              {
+                type: "view",
+                props: {
+                  id: "blankBarHours",
+                  bgcolor: themeColor[theme]["bgColor"]
+                },
+                layout: function(make, view) {
+                  make.center.equalTo(view.super);
+                  make.width.equalTo(view.super.width),
+                  make.height.equalTo(blankBarHeight);
+                }
+              },
+            ]
           },
           {
-            type: "label",
+            type: "view",
             props: {
-              id: "APMLabel",
-              text: apm(labelHour),
-              align: $align.center,
-              textColor: themeColor[theme]["textColor"],
-              font: $font(20)
+              id: "minutesView",
+              bgcolor: themeColor[theme]["viewColor"],
+              smoothRadius: 20
             },
             layout: function(make, view) {
-              if (apm($("hours").text) == "PM") {
-                make.left.bottom.inset(20);
-              } else {
-                make.left.top.inset(20);
+
+              make.right.inset(0);
+              make.bottom.inset(0)
+              make.size.equalTo($size(cardLength, cardLength));
+            },
+            views: [
+              {
+                type: "label",
+                props: {
+                  id: "minutes",
+                  text: labelMinute,
+                  align: $align.center,
+                  textColor: themeColor[theme]["textColor"],
+                  font: $font("TimesNewRomanPS-BoldMT", timeFontSize)
+                },
+                layout: function(make, view) {
+                  make.center.equalTo(view.super);
+                }
+              },
+              {
+                type: "view",
+                props: {
+                  id: "blankBarMinutes",
+                  bgcolor: themeColor[theme]["bgColor"]
+                },
+                layout: function(make, view) {
+                  make.center.equalTo(view.super),
+                  make.width.equalTo(view.super.width),
+                  make.height.equalTo(blankBarHeight);
+                }
               }
-            }
+            ]
           }
         ]
-      },
-      {
-        type: "view",
-        props: {
-          id: "minutesView",
-          bgcolor: themeColor[theme]["viewColor"],
-          smoothRadius: 20
-        },
-        layout: function(make, view) {
-          make.bottom.inset(edgeTop);
-          make.right.inset(edgeLeft);
-          make.size.equalTo(cardSize);
-        },
-        views: [
-          {
-            type: "label",
-            props: {
-              id: "minutes",
-              text: labelMinute,
-              align: $align.center,
-              textColor: themeColor[theme]["textColor"],
-              font: $font("TimesNewRomanPS-BoldMT", timeFontSize)
-            },
-            layout: function(make, view) {
-              make.center.equalTo(view.super);
-            }
-          }
-        ]
-      },
-      {
-        type: "view",
-        props: {
-          id: "blankBar",
-          bgcolor: themeColor[theme]["bgColor"]
-        },
-        layout: function(make, view) {
-          make.center.equalTo(view.super),
-            make.width.equalTo(view.super.width),
-            make.height.equalTo(blankBarHeight);
-        }
-      },
-      {
-        type: "view",
-        props: {
-          id: "blankBarHours",
-          bgcolor: themeColor[theme]["bgColor"]
-        },
-        layout: function(make, view) {
-          make.centerX.equalTo(view.super),make.top.inset(blankBarPos);
-          make.width.equalTo(view.super.width),
-            make.height.equalTo(blankBarHeight);
-        }
-      },
-      {
-        type: "view",
-        props: {
-          id: "blankBarMinutes",
-          bgcolor: themeColor[theme]["bgColor"]
-        },
-        layout: function(make, view) {
-          make.centerX.equalTo(view.super), make.bottom.inset(blankBarPos);
-          make.width.equalTo(view.super.width),
-            make.height.equalTo(blankBarHeight);
-        }
       }
     ]
   });
@@ -291,7 +261,7 @@ let changeTheme = function() {
   }
   theme = $cache.get("theme");
   $("background").bgcolor = themeColor[theme]["bgColor"];
-  $("blankBar").bgcolor = themeColor[theme]["bgColor"];
+  $("frameView").bgcolor = themeColor[theme]["bgColor"];
   $("blankBarHours").bgcolor = themeColor[theme]["bgColor"];
   $("blankBarMinutes").bgcolor = themeColor[theme]["bgColor"];
   $("hoursView").bgcolor = themeColor[theme]["viewColor"];
@@ -303,8 +273,7 @@ let changeTheme = function() {
 };//处理双击更换主题的事件
 
 
-var isIpad = $device.isIpad;
-var isIpadPro = $device.isIpadPro;
+
 //屏幕检测
 if (
   (isIphoneX  || isIpad || isIpadPro) &&
