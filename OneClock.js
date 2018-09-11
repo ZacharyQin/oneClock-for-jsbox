@@ -11,6 +11,7 @@
  * @/brief
  */
 const version =1.03;
+const scriptName=$addin.current.name
 scriptVersionUpdate();
 
 $app.idleTimerDisabled //禁用息屏
